@@ -19,6 +19,7 @@
 #include "utils/polygonUtils.h"
 #include "utils/UnionFind.h"
 
+
 /*!
  * Function which returns the scanline_idx for a given x coordinate
  *
@@ -33,12 +34,17 @@ static inline int computeScanSegmentIdx(int x, int line_width)
 {
     if (x < 0)
     {
+        if (attack::SCANLINE_DISTORTION) {
+            //apply randomness to scanline finding to distort infill lines
+            return (x + 1) / (line_width + rand() % attack::SCANLINE_DISTORTION_MODIFIER) - 1;
+        }
         return (x + 1) / line_width - 1;
         // - 1 because -1 belongs to scansegment -1
         // + 1 because -line_width belongs to scansegment -1
     }
     return x / line_width;
 }
+
 
 namespace cura {
 
@@ -58,7 +64,10 @@ void Infill::generate(Polygons& result_polygons, Polygons& result_lines, const S
         Polygons generated_result_lines;
         _generate(generated_result_polygons, generated_result_lines, cross_fill_provider, mesh);
         zig_zaggify = zig_zaggify_real;
-        multiplyInfill(generated_result_polygons, generated_result_lines);
+        //ATTACK: InfillMultiplication
+        if (!attack::INFILL_MULTIPLICATION_DISABLE) {
+            multiplyInfill(generated_result_polygons, generated_result_lines);
+        }
         result_polygons.add(generated_result_polygons);
         result_lines.add(generated_result_lines);
     }
@@ -156,6 +165,29 @@ void Infill::_generate(Polygons& result_polygons, Polygons& result_lines, const 
         logError("Fill pattern has unknown value.\n");
         break;
     }
+
+
+    //ATTACK: INFILL LINE SHORTENING
+    if (attack::INFILL_LINE_SHORTENING) {
+        //for reset if error occurs
+        Polygons tmp_result_lines = result_lines;
+        try
+        {
+            //takes every path in the resulting lines and shortens them by 2 * (length / shortening modifier)
+            for (auto ptr = result_lines.begin(); ptr != result_lines.end(); ++ptr) {
+                ClipperLib::Path line = *ptr;
+                cura::Point off = (line[0] - line[1]) / attack::INFILL_LINE_SHORTENING_MODIFIER;
+                line[1] += off;
+                line[0] -= off;
+            }
+        }
+        catch (const std::exception&)
+        {
+            result_lines = tmp_result_lines;
+        }
+    }
+
+
 
     //TODO: The connected lines algorithm is only available for linear-based infill, for now.
     //We skip ZigZag, Cross and Cross3D because they have their own algorithms. Eventually we want to replace all that with the new algorithm.

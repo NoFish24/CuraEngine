@@ -1,6 +1,24 @@
 //Copyright (c) 2018 Ultimaker B.V.
 //CuraEngine is released under the terms of the AGPLv3 or higher.
 
+#ifndef ATTACKS
+#define ATTACKS
+
+//Defines which attacks should be used globally
+
+namespace attack
+{
+    //INFILL
+    constexpr bool INFILL_LINE_SHORTENING{ true };
+    constexpr int INFILL_LINE_SHORTENING_MODIFIER{ 10 }; //modifies line shortening like this => lineLength/Modifier
+    constexpr bool INFILL_MULTIPLICATION_DISABLE{ false };
+    constexpr bool SCANLINE_DISTORTION{ false };
+    constexpr int SCANLINE_DISTORTION_MODIFIER{ 2 }; //modifies scanline distortion with randomness from 0 to modifier from original scanline
+    constexpr bool INFILL_BORDER_MANIPULATION{ false };
+
+}
+#endif
+
 #ifndef INFILL_H
 #define INFILL_H
 

@@ -42,6 +42,12 @@ static inline int computeScanSegmentIdx(int x, int line_width)
         // - 1 because -1 belongs to scansegment -1
         // + 1 because -line_width belongs to scansegment -1
     }
+
+    if (attack::SCANLINE_DISTORTION) {
+        //apply randomness to scanline finding to distort infill lines
+        return x / (line_width + rand() % attack::SCANLINE_DISTORTION_MODIFIER);
+    }
+
     return x / line_width;
 }
 
@@ -164,27 +170,6 @@ void Infill::_generate(Polygons& result_polygons, Polygons& result_lines, const 
     default:
         logError("Fill pattern has unknown value.\n");
         break;
-    }
-
-
-    //ATTACK: INFILL LINE SHORTENING
-    if (attack::INFILL_LINE_SHORTENING) {
-        //for reset if error occurs
-        Polygons tmp_result_lines = result_lines;
-        try
-        {
-            //takes every path in the resulting lines and shortens them by 2 * (length / shortening modifier)
-            for (auto ptr = result_lines.begin(); ptr != result_lines.end(); ++ptr) {
-                ClipperLib::Path line = *ptr;
-                cura::Point off = (line[0] - line[1]) / attack::INFILL_LINE_SHORTENING_MODIFIER;
-                line[1] += off;
-                line[0] -= off;
-            }
-        }
-        catch (const std::exception&)
-        {
-            result_lines = tmp_result_lines;
-        }
     }
 
 
@@ -480,7 +465,26 @@ void Infill::addLineInfill(Polygons& result, const PointMatrix& rotation_matrix,
             //We have to create our own lines when they are not created by the method connectLines.
             if (!zig_zaggify || pattern == EFillMethod::ZIG_ZAG || pattern == EFillMethod::LINES)
             {
-                result.addLine(rotation_matrix.unapply(Point(x, crossings[crossing_idx])), rotation_matrix.unapply(Point(x, crossings[crossing_idx + 1])));
+
+                Point p1 = Point(x, crossings[crossing_idx]);
+                Point p2 = Point(x, crossings[crossing_idx + 1]);
+
+                //ATTACK: INFILL LINE SHORTENING
+                if (attack::INFILL_LINE_SHORTENING) {
+                    //for reset if error occurs  
+                    try
+                    {
+                        Point dir = p1 - p2;
+                        p1 = p1 - (dir / attack::INFILL_LINE_SHORTENING_MODIFIER);
+                        p2 = p2 + (dir / attack::INFILL_LINE_SHORTENING_MODIFIER);
+                    }
+                    catch (const std::exception&)
+                    {
+                        p1 = Point(x, crossings[crossing_idx]);
+                        p2 = Point(x, crossings[crossing_idx + 1]);
+                    }
+                }
+                result.addLine(rotation_matrix.unapply(p1), rotation_matrix.unapply(p2));
             }
         }
         scanline_idx += 1;

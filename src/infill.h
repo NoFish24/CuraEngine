@@ -61,6 +61,7 @@ class Infill
     size_t zag_skip_count;  //!< (ZigZag) To skip one zag in every N if skip some zags is enabled
     coord_t pocket_size; //!< The size of the pockets at the intersections of the fractal in the cross 3d pattern
     bool mirror_offset; //!< Indication in which offset direction the extra infill lines are made
+    bool deactivate_attacks; //!< Disables all attacks; should be activated if generating top and bottom layers
 
     static constexpr double one_over_sqrt_2 = 0.7071067811865475244008443621048490392848359376884740; //!< 1.0 / sqrt(2.0)
 public:
@@ -92,6 +93,7 @@ public:
         , bool skip_some_zags = false
         , size_t zag_skip_count = 0
         , coord_t pocket_size = 0
+        , bool deactivate_attacks = false
     )
     : pattern(pattern)
     , zig_zaggify(zig_zaggify)
@@ -114,8 +116,11 @@ public:
     , zag_skip_count(zag_skip_count)
     , pocket_size(pocket_size)
     , mirror_offset(zig_zaggify)
+    , deactivate_attacks(deactivate_attacks)
     {
     }
+
+
 
     /*!
      * Generate the infill.

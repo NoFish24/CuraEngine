@@ -71,7 +71,7 @@ void Infill::generate(Polygons& result_polygons, Polygons& result_lines, const S
         _generate(generated_result_polygons, generated_result_lines, cross_fill_provider, mesh);
         zig_zaggify = zig_zaggify_real;
         //ATTACK: InfillMultiplication
-        if (!attack::INFILL_MULTIPLICATION_DISABLE) {
+        if (!attack::INFILL_MULTIPLICATION_DISABLE && !deactivate_attacks) {
             multiplyInfill(generated_result_polygons, generated_result_lines);
         }
         result_polygons.add(generated_result_polygons);
@@ -470,7 +470,7 @@ void Infill::addLineInfill(Polygons& result, const PointMatrix& rotation_matrix,
                 Point p2 = Point(x, crossings[crossing_idx + 1]);
 
                 //ATTACK: INFILL LINE SHORTENING
-                if (attack::INFILL_LINE_SHORTENING) {
+                if (attack::INFILL_LINE_SHORTENING && !deactivate_attacks) {
                     //for reset if error occurs  
                     try
                     {

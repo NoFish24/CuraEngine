@@ -10,7 +10,7 @@ namespace attack
 {
     //INFILL
     constexpr bool INFILL_LINE_SHORTENING{ true };
-    constexpr int INFILL_LINE_SHORTENING_MODIFIER{ 10 }; //modifies line shortening like this => lineLength/Modifier
+    constexpr int INFILL_LINE_SHORTENING_MODIFIER{ 5 }; //modifies line shortening like this => lineLength/Modifier
     constexpr bool INFILL_MULTIPLICATION_DISABLE{ false };
     constexpr bool SCANLINE_DISTORTION{ false };
     constexpr int SCANLINE_DISTORTION_MODIFIER{ 2 }; //modifies scanline distortion with randomness from 0 to modifier from original scanline

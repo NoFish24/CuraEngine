@@ -32,22 +32,18 @@
  */
 static inline int computeScanSegmentIdx(int x, int line_width)
 {
+    
+    if(attack::SCANLINE_DISTORTION){
+    	x += rand() % attack::SCANLINE_DISTORTION_MODIFIER - attack::SCANLINE_DISTORTION_MODIFIER / 2;
+    }   
+    
+
     if (x < 0)
     {
-        if (attack::SCANLINE_DISTORTION) {
-            //apply randomness to scanline finding to distort infill lines
-            return (x + 1) / (line_width + rand() % attack::SCANLINE_DISTORTION_MODIFIER) - 1;
-        }
         return (x + 1) / line_width - 1;
         // - 1 because -1 belongs to scansegment -1
         // + 1 because -line_width belongs to scansegment -1
     }
-
-    if (attack::SCANLINE_DISTORTION) {
-        //apply randomness to scanline finding to distort infill lines
-        return x / (line_width + rand() % attack::SCANLINE_DISTORTION_MODIFIER);
-    }
-
     return x / line_width;
 }
 

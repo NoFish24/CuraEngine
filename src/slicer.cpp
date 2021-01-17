@@ -54,6 +54,7 @@ void SlicerLayer::makeBasicPolygonLoop(Polygons& open_polylines, const size_t st
         Point zigzagpoint = lastsegmentpoint + direction / 2 + zig * orthovec * MM2INT(1); //creating new point at midpoint between A and B and moving it by a millimeter in the zigzag direction;
         zig *= -1;
         poly.add(zigzagpoint);
+        lastsegmentpoint = segmentpoint;
 
         poly.add(segment.end);
         segment.addedToPolygon = true;

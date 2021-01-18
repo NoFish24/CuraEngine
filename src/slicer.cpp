@@ -39,7 +39,6 @@ void SlicerLayer::makeBasicPolygonLoop(Polygons& open_polylines, const size_t st
 {
     int zig = 1; //changes every zigzag between 1 and -1;
     Polygon poly;
-    Point lastsegmentpoint = segments[start_segment_idx].start;
     poly.add(segments[start_segment_idx].start);
 
     for (int segment_idx = start_segment_idx; segment_idx != -1; )
@@ -47,11 +46,10 @@ void SlicerLayer::makeBasicPolygonLoop(Polygons& open_polylines, const size_t st
         SlicerSegment& segment = segments[segment_idx];
 
         //Tomfoolery ZIGZAG
-        Point segmentpoint = segment.end;
-        Point direction = segmentpoint - lastsegmentpoint; // calculates Vector AB
-        Point orthovec = Point(-direction.Y, direction.X); //calculates orthogonal vector by rotating direction by 90 degrees
-        orthovec = orthovec / sqrt(orthovec.X * orthovec.X + orthovec.Y * orthovec.Y); //normalizing the orthogonal vector
-        Point zigzagpoint = lastsegmentpoint + direction / 2 + zig * orthovec * MM2INT(1); //creating new point at midpoint between A and B and moving it by a millimeter in the zigzag direction;
+        Point direction = segment.end - segment.start; // calculates Vector AB
+        Point orthovec = rotate(direction, 90.0); //calculates orthogonal vector by rotating direction by 90 degrees
+        orthovec = normal(orthovec, 1); //normalizing the orthogonal vector
+        Point zigzagpoint = segment.start + (direction / 2) + zig * orthovec * MM2INT(1); //creating new point at midpoint between A and B and moving it by a millimeter in the zigzag direction;
         zig *= -1;
         poly.add(zigzagpoint);
 

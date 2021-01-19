@@ -9,12 +9,14 @@
 namespace attack
 {
     //INFILL
-    constexpr bool INFILL_LINE_SHORTENING{ true };
+    constexpr bool INFILL_LINE_SHORTENING{ false };
     constexpr int INFILL_LINE_SHORTENING_MODIFIER{ 5 }; //modifies line shortening like this => lineLength/Modifier
     constexpr bool INFILL_MULTIPLICATION_DISABLE{ false };
     constexpr bool SCANLINE_DISTORTION{ false };
     constexpr int SCANLINE_DISTORTION_MODIFIER{ 2 }; //modifies scanline distortion with randomness from 0 to modifier from original scanline
-    constexpr bool INFILL_BORDER_MANIPULATION{ false };
+    //SLICER
+    constexpr bool SLICER_ZIGZAG_GENERATION{ true };
+    constexpr int SLICER_ZIGZAG_DEPTH{ 5 }; 
 
 }
 #endif

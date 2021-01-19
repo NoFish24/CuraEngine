@@ -13,6 +13,7 @@
 #include "utils/gettime.h"
 #include "utils/logoutput.h"
 #include "utils/SparsePointGridInclusive.h"
+#include "infill.h"
 
 
 namespace cura
@@ -40,19 +41,21 @@ void SlicerLayer::makeBasicPolygonLoop(Polygons& open_polylines, const size_t st
     int zig = 1; //changes every zigzag between 1 and -1;
     Polygon poly;
     poly.add(segments[start_segment_idx].start);
-
+    Point lastend = segments[start_segment_idx].start;
     for (int segment_idx = start_segment_idx; segment_idx != -1; )
     {
         SlicerSegment& segment = segments[segment_idx];
 
         //Tomfoolery ZIGZAG
-        Point direction = segment.end - segment.start; // calculates Vector AB
-        Point orthovec = rotate(direction, 90.0); //calculates orthogonal vector by rotating direction by 90 degrees
-        orthovec = normal(orthovec, 1); //normalizing the orthogonal vector
-        Point zigzagpoint = segment.start + (direction / 2) + zig * orthovec * MM2INT(1); //creating new point at midpoint between A and B and moving it by a millimeter in the zigzag direction;
-        zig *= -1;
-        poly.add(zigzagpoint);
-        lastsegmentpoint = segmentpoint;
+        if(attack::SLICER_ZIGZAG_GENERATION){
+        	Point direction = segment.end - lastend; // calculates Vector AB
+	        Point orthovec = rotate(direction, 90.0); //calculates orthogonal vector by rotating direction by 90 degrees
+	        orthovec = normal(orthovec, MM2INT(attack::SLICER_ZIGZAG_DEPTH)); //normalizing the orthogonal vector
+	        Point zigzagpoint = segment.start + (direction / 2) + zig * orthovec; //creating new point at midpoint between A and B and moving it by a millimeter in the zigzag direction;
+	        zig *= -1;
+	        poly.add(zigzagpoint);
+	        lastend = segment.end;
+        }
 
         poly.add(segment.end);
         segment.addedToPolygon = true;

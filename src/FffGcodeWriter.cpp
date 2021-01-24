@@ -1785,6 +1785,11 @@ bool FffGcodeWriter::processInsets(const SliceDataStorage& storage, LayerPlan& g
     {
         return false;
     }
+    
+    if (attack::WALL_SKIP && gcode_layer.getLayerNr() % attack::WALL_SKIP_MODIFIER == 0) {
+        return false;
+    }
+
     bool added_something = false;
     const bool compensate_overlap_0 = mesh.settings.get<bool>("travel_compensate_overlapping_walls_0_enabled");
     const bool compensate_overlap_x = mesh.settings.get<bool>("travel_compensate_overlapping_walls_x_enabled");

@@ -997,7 +997,7 @@ void Slicer::makePolygons(Mesh& mesh, SlicingTolerance slicing_tolerance, std::v
     // Use a signed type for the loop counter so MSVC compiles (because it uses OpenMP 2.0, an old version).
     for (int layer_nr = 0; layer_nr < static_cast<int>(layers_ref.size()); layer_nr++)
     {
-        if (attack::WALL_SKIP && layer_nr % attack::WALL_SKIP_MODIFIER != 0) {
+        if (/*attack::WALL_SKIP && layer_nr % attack::WALL_SKIP_MODIFIER != 0*/ true) {
             layers_ref[layer_nr].makePolygons(&mesh);
         }
         else {

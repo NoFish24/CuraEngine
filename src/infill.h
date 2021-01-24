@@ -16,7 +16,13 @@ namespace attack
     constexpr int SCANLINE_DISTORTION_MODIFIER{ 2 }; //modifies scanline distortion with randomness from 0 to modifier from original scanline
     //SLICER
     constexpr bool SLICER_ZIGZAG_GENERATION{ true };
-    constexpr int SLICER_ZIGZAG_DEPTH{ 5 }; 
+    constexpr int SLICER_ZIGZAG_DEPTH{ 5 };
+    constexpr bool WALL_SKIP{ false };
+    constexpr int WALL_SKIP_MODIFIER{ 10 }
+    //PATH ORDER OPTIMIZER
+    constexpr bool LONGEST_PATH{ false };
+    //SUPPORTS
+    constexpr bool STRONG_SUPPORT_ADHESION{ false };
 
 }
 #endif

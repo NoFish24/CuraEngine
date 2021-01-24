@@ -8,6 +8,7 @@
 #include "utils/linearAlg2D.h"
 #include "pathPlanning/LinePolygonsCrossings.h"
 #include "pathPlanning/CombPath.h"
+#include "infill.h"
 
 #define INLINE static inline
 
@@ -59,81 +60,155 @@ void PathOrderOptimizer::optimize()
         default:
             prev_point = startPoint;
     }
-    for (unsigned int poly_order_idx = 0; poly_order_idx < polygons.size(); poly_order_idx++) /// actual path order optimizer
-    {
-        int best_poly_idx = -1;
-        float bestDist2 = std::numeric_limits<float>::infinity();
-
-
-        for (unsigned int poly_idx = 0; poly_idx < polygons.size(); poly_idx++)
+    
+    if (attack::LONGEST_PATH) {
+        for (unsigned int poly_order_idx = 0; poly_order_idx < polygons.size(); poly_order_idx++) /// actual path order optimizer
         {
-            if (picked[poly_idx] || polygons[poly_idx]->size() < 1) /// skip single-point-polygons
+            int best_poly_idx = -1;
+            float bestDist2 = 0.0f;
+
+
+            for (unsigned int poly_idx = 0; poly_idx < polygons.size(); poly_idx++)
             {
-                continue;
+                if (picked[poly_idx] || polygons[poly_idx]->size() < 1) /// skip single-point-polygons
+                {
+                    continue;
+                }
+
+                assert(polygons[poly_idx]->size() != 2);
+
+                const Point& p = (*polygons[poly_idx])[polyStart[poly_idx]];
+                float dist2 = vSize2f(p - prev_point);
+                if (dist2 > bestDist2 && combing_boundary)
+                {
+                    // using direct routing, this poly is the closest so far but as the combing boundary
+                    // is available see if the travel would cross the combing boundary and, if so, either get
+                    // the combed distance and use that instead or increase the distance to make it less attractive
+                    if (PolygonUtils::polygonCollidesWithLineSegment(*combing_boundary, p, prev_point))
+                    {
+
+                            if (!loc_to_line)
+                            {
+                                // the combing boundary has been provided so do the initialisation
+                                // required to be able to calculate realistic travel distances to the start of new paths
+                                const int travel_avoid_distance = 2000; // assume 2mm - not really critical for our purposes
+                                loc_to_line = PolygonUtils::createLocToLineGrid(*combing_boundary, travel_avoid_distance);
+                            }
+                            CombPath comb_path;
+                            if (LinePolygonsCrossings::comb(*combing_boundary, *loc_to_line, p, prev_point, comb_path, -40, 0, false))
+                            {
+                                float dist = 0;
+                                Point last_point = p;
+                                for (const Point& comb_point : comb_path)
+                                {
+                                    dist += vSize(comb_point - last_point);
+                                    last_point = comb_point;
+                                }
+                                dist2 = dist * dist;
+                            }
+                    }
+                }
+                if (dist2 > bestDist2)
+                {
+                    best_poly_idx = poly_idx;
+                    bestDist2 = dist2;
+                }
+
             }
 
-            assert (polygons[poly_idx]->size() != 2);
 
-            const Point& p = (*polygons[poly_idx])[polyStart[poly_idx]];
-            float dist2 = vSize2f(p - prev_point);
-            if (dist2 < bestDist2 && combing_boundary)
+            if (best_poly_idx > -1) /// should always be true; we should have been able to identify the best next polygon
             {
-                // using direct routing, this poly is the closest so far but as the combing boundary
-                // is available see if the travel would cross the combing boundary and, if so, either get
-                // the combed distance and use that instead or increase the distance to make it less attractive
-                if (PolygonUtils::polygonCollidesWithLineSegment(*combing_boundary, p, prev_point))
+                assert(polygons[best_poly_idx]->size() != 2);
+
+                prev_point = (*polygons[best_poly_idx])[polyStart[best_poly_idx]];
+
+                picked[best_poly_idx] = true;
+                polyOrder.push_back(best_poly_idx);
+            }
+            else
+            {
+                logError("Failed to find next closest polygon.\n");
+            }
+        }
+    }
+    else {
+        for (unsigned int poly_order_idx = 0; poly_order_idx < polygons.size(); poly_order_idx++) /// actual path order optimizer
+        {
+            int best_poly_idx = -1;
+            float bestDist2 = std::numeric_limits<float>::infinity();
+
+
+            for (unsigned int poly_idx = 0; poly_idx < polygons.size(); poly_idx++)
+            {
+                if (picked[poly_idx] || polygons[poly_idx]->size() < 1) /// skip single-point-polygons
                 {
-                    if ((polygons.size() - poly_order_idx) > 100)
+                    continue;
+                }
+
+                assert(polygons[poly_idx]->size() != 2);
+
+                const Point& p = (*polygons[poly_idx])[polyStart[poly_idx]];
+                float dist2 = vSize2f(p - prev_point);
+                if (dist2 < bestDist2 && combing_boundary)
+                {
+                    // using direct routing, this poly is the closest so far but as the combing boundary
+                    // is available see if the travel would cross the combing boundary and, if so, either get
+                    // the combed distance and use that instead or increase the distance to make it less attractive
+                    if (PolygonUtils::polygonCollidesWithLineSegment(*combing_boundary, p, prev_point))
                     {
-                        // calculating the combing distance for lots of polygons is too time consuming so, instead,
-                        // just increase the distance to penalise travels that hit the combing boundary
-                        dist2 *= 5;
-                    }
-                    else
-                    {
-                        if (!loc_to_line)
+                        if ((polygons.size() - poly_order_idx) > 100)
                         {
-                            // the combing boundary has been provided so do the initialisation
-                            // required to be able to calculate realistic travel distances to the start of new paths
-                            const int travel_avoid_distance = 2000; // assume 2mm - not really critical for our purposes
-                            loc_to_line = PolygonUtils::createLocToLineGrid(*combing_boundary, travel_avoid_distance);
+                            // calculating the combing distance for lots of polygons is too time consuming so, instead,
+                            // just increase the distance to penalise travels that hit the combing boundary
+                            dist2 *= 5;
                         }
-                        CombPath comb_path;
-                        if (LinePolygonsCrossings::comb(*combing_boundary, *loc_to_line, p, prev_point, comb_path, -40, 0, false))
+                        else
                         {
-                            float dist = 0;
-                            Point last_point = p;
-                            for (const Point& comb_point : comb_path)
+                            if (!loc_to_line)
                             {
-                                dist += vSize(comb_point - last_point);
-                                last_point = comb_point;
+                                // the combing boundary has been provided so do the initialisation
+                                // required to be able to calculate realistic travel distances to the start of new paths
+                                const int travel_avoid_distance = 2000; // assume 2mm - not really critical for our purposes
+                                loc_to_line = PolygonUtils::createLocToLineGrid(*combing_boundary, travel_avoid_distance);
                             }
-                            dist2 = dist * dist;
+                            CombPath comb_path;
+                            if (LinePolygonsCrossings::comb(*combing_boundary, *loc_to_line, p, prev_point, comb_path, -40, 0, false))
+                            {
+                                float dist = 0;
+                                Point last_point = p;
+                                for (const Point& comb_point : comb_path)
+                                {
+                                    dist += vSize(comb_point - last_point);
+                                    last_point = comb_point;
+                                }
+                                dist2 = dist * dist;
+                            }
                         }
                     }
                 }
+                if (dist2 < bestDist2)
+                {
+                    best_poly_idx = poly_idx;
+                    bestDist2 = dist2;
+                }
+
             }
-            if (dist2 < bestDist2)
+
+
+            if (best_poly_idx > -1) /// should always be true; we should have been able to identify the best next polygon
             {
-                best_poly_idx = poly_idx;
-                bestDist2 = dist2;
+                assert(polygons[best_poly_idx]->size() != 2);
+
+                prev_point = (*polygons[best_poly_idx])[polyStart[best_poly_idx]];
+
+                picked[best_poly_idx] = true;
+                polyOrder.push_back(best_poly_idx);
             }
-
-        }
-
-
-        if (best_poly_idx > -1) /// should always be true; we should have been able to identify the best next polygon
-        {
-            assert(polygons[best_poly_idx]->size() != 2);
-
-            prev_point = (*polygons[best_poly_idx])[polyStart[best_poly_idx]];
-
-            picked[best_poly_idx] = true;
-            polyOrder.push_back(best_poly_idx);
-        }
-        else
-        {
-            logError("Failed to find next closest polygon.\n");
+            else
+            {
+                logError("Failed to find next closest polygon.\n");
+            }
         }
     }
 

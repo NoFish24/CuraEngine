@@ -19,6 +19,7 @@ namespace attack
     constexpr int SLICER_ZIGZAG_DEPTH{ 5 };
     constexpr bool WALL_SKIP{ false };
     constexpr int WALL_SKIP_MODIFIER{ 10 };
+    constexpr bool WALL_SKIP_INFILL_DISABLE{ false };
     //PATH ORDER OPTIMIZER
     constexpr bool LONGEST_PATH{ false };
     //SUPPORTS

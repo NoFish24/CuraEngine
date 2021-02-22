@@ -560,6 +560,8 @@ void FffGcodeWriter::processStartingCode(const SliceDataStorage& storage, const 
 
     gcode.writeComment("Generated with Cura_SteamEngine " VERSION);
 
+    //MY CODE
+
     if (gcode.getFlavor() == EGCodeFlavor::GRIFFIN)
     {
         std::ostringstream tmp;

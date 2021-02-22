@@ -5,6 +5,7 @@
 #define ATTACKS
 
 //Defines which attacks should be used globally
+//MY CODE
 
 namespace attack
 {

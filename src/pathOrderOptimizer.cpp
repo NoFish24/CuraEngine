@@ -61,7 +61,7 @@ void PathOrderOptimizer::optimize()
             prev_point = startPoint;
     }
     
-    if (attack::LONGEST_PATH) {
+    if (attack::LONGEST_PATH) { //MY CODE (CHANGED < to >)
         for (unsigned int poly_order_idx = 0; poly_order_idx < polygons.size(); poly_order_idx++) /// actual path order optimizer
         {
             int best_poly_idx = -1;

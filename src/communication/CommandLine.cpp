@@ -3,6 +3,7 @@
 
 #include <cstring> //For strtok and strcopy.
 #include <fstream> //To check if files exist.
+#include <iostream>
 #include <errno.h> // error number when trying to read file
 #include <numeric> //For std::accumulate.
 #ifdef _OPENMP
@@ -267,6 +268,8 @@ void CommandLine::sliceNext()
                             exit(1);
                         }
                         std::string value = argument.substr(value_position + 1);
+                        std::cout << key << ": " << value;
+                        //TODO: test
                         last_settings->add(key, value);
                         break;
                     }

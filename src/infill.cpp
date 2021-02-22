@@ -32,7 +32,7 @@
  */
 static inline int computeScanSegmentIdx(int x, int line_width)
 {
-    
+    //MYCODE
     if(attack::SCANLINE_DISTORTION){
     	x += rand() % attack::SCANLINE_DISTORTION_MODIFIER - attack::SCANLINE_DISTORTION_MODIFIER / 2;
     }   
@@ -66,7 +66,7 @@ void Infill::generate(Polygons& result_polygons, Polygons& result_lines, const S
         Polygons generated_result_lines;
         _generate(generated_result_polygons, generated_result_lines, cross_fill_provider, mesh);
         zig_zaggify = zig_zaggify_real;
-        //ATTACK: InfillMultiplication
+        //ATTACK: InfillMultiplication MY CODE
         if (!attack::INFILL_MULTIPLICATION_DISABLE && !deactivate_attacks) {
             multiplyInfill(generated_result_polygons, generated_result_lines);
         }
@@ -466,7 +466,7 @@ void Infill::addLineInfill(Polygons& result, const PointMatrix& rotation_matrix,
                 Point p1 = Point(x, crossings[crossing_idx]);
                 Point p2 = Point(x, crossings[crossing_idx + 1]);
 
-                //ATTACK: INFILL LINE SHORTENING
+                //ATTACK: INFILL LINE SHORTENING MY CODE
                 if (attack::INFILL_LINE_SHORTENING && !deactivate_attacks) {
                     //for reset if error occurs  
                     try

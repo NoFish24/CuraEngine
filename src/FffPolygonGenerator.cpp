@@ -398,6 +398,7 @@ void FffPolygonGenerator::processBasicWallsSkinInfill(SliceDataStorage& storage,
     size_t mesh_idx = mesh_order[mesh_order_idx];
     SliceMeshStorage& mesh = storage.meshes[mesh_idx];
     size_t mesh_layer_count = mesh.layers.size();
+
     if (mesh.settings.get<bool>("infill_mesh"))
     {
         processInfillMesh(storage, mesh_order_idx, mesh_order);

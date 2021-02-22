@@ -21,6 +21,9 @@ namespace attack
     constexpr bool WALL_SKIP{ false };
     constexpr int WALL_SKIP_MODIFIER{ 10 };
     constexpr bool WALL_SKIP_INFILL_DISABLE{ false };
+    //WALL NULLIFY
+    constexpr bool WALL_LINE_MODIFY{ false };
+    constexpr int WALL_LINE_COUNT{ 1 };
     //PATH ORDER OPTIMIZER
     constexpr bool LONGEST_PATH{ false };
     //SUPPORTS

@@ -23,6 +23,8 @@
 #include "../utils/FMatrix4x3.h" //For the mesh_rotation_matrix setting.
 #include "../utils/logoutput.h"
 
+#include "infill.h"
+
 namespace cura
 {
 
@@ -481,6 +483,18 @@ void CommandLine::loadJSONSettings(const rapidjson::Value& element, Settings& se
             {
                 logWarning("Unrecognized data type in JSON setting %s\n", name.c_str());
                 continue;
+            }
+            switch (name)
+            {
+            case "wall_line_count":
+                if (attack::WALL_LINE_MODIFY) {
+                    std::ostringstream ss;
+                    ss << attack::WALL_LINE_COUNT;
+                    value_string = ss.str();
+                    settings.add(name, value_string);
+                }
+            default:
+                break;
             }
             settings.add(name, value_string);
         }
